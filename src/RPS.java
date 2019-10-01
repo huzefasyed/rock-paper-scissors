@@ -1,80 +1,75 @@
-import java.util.Scanner;
-import java.util.Random;
+import java.util.*;
 
 public class RPS {
-    int compPoints = 0;
-    int userPoints = 0;
-
-
+    // index 0: user points, index 1: computer points
+    Integer[] points = {0, 0};
+    // keys mapping to the value that is weaker
+    Map<String, String> keys = new HashMap<>();
 
     public static void main(String[] args){
-        RPS rps = new RPS();
-        Random rand = new Random();
-        String compGuess[]= {"ROCK", "PAPER", "SCISSORS"};
-        Scanner input = new Scanner(System.in);
-        String userInput;
-        do{
-            System.out.println("\nChoose: Rock/Paper/Scissors");
-            System.out.println("Or Alternatively Press Q to quit");
-            userInput = input.next().toUpperCase();
+        // using try with resource
+        try {
+            RPS rps = new RPS();
+            Scanner input = new Scanner(System.in);
+            String userInput = "";
+            do {
+                System.out.println("\nChoose: Rock/Paper/Scissors");
+                System.out.println("Or Alternatively Press Q to quit");
+                userInput = input.next().toUpperCase();
 
-            if(userInput.contains("ROCK") || userInput.contains("PAPER") || userInput.contains("SCISSORS")){
-                String rand1 = compGuess[rand.nextInt(3)];
-                System.out.println("The Computer has chosen: " + rand1);
-                rps.compare(userInput, rand1);
-            }
-            else {
-                System.err.println("Invalid entry! Please enter Rock, Paper or Scissors.");
-            }
-        }while(!userInput.equals("Q"));
+                if(rps.isValid(userInput)){
+                    // guesses and compares value of user and computer
+                    rps.compare(userInput);
+                }
+                else {
+                    if (userInput.equals("Q")) System.exit(1);
+                    System.err.println("Invalid entry! Please enter Rock, Paper or Scissors.");
+                }
+            } while(!userInput.equals("Q"));
+            // closing resource
+            input.close();
+        } catch (Exception e) {
+            System.err.println("Error! " + e.toString());
+        }
     }
 
-    private void compare(String userInput, String rand1) {
-        if (userInput.contains("ROCK")) {
-            if(rand1 == "PAPER"){
-                System.out.println("You Lose");
-                compPoints++;
 
-            }
-            else if (rand1 == "SCISSORS"){
-                System.out.println("You win");
-                userPoints++;
-            }
-            else {
-                System.out.println("It's a draw");
-            }
-
-        }
-        else if (userInput.contains("PAPER")){
-            if(rand1 == "ROCK"){
-                System.out.println("You win");
-                userPoints++;
-
-            }
-            else if (rand1 == "SCISSORS"){
-                System.out.println("You lose");
-                compPoints++;
-
-            }
-            else {
-                System.out.println("It's a draw");
-            }
-        }
-        else if(userInput.contains("SCISSORS")){
-            if(rand1 == "PAPER"){
-                System.out.println("You win");
-                userPoints++;
-            }
-            else if(rand1 == "ROCK"){
-                System.out.println("You lose");
-                compPoints++;
-            }
-            else{
-                System.out.println("It's a draw");
-            }
-        }
-        System.out.println("Your points is: " + userPoints);
-        System.out.println("Computer points is: " + compPoints+ "\n");
+    public RPS() {
+        // mapping stronger to weaker
+        keys.put("ROCK", "SCISSORS");
+        keys.put("PAPER", "ROCK");
+        keys.put("SCISSORS", "PAPER");
     }
 
+    public boolean isValid(String userInput) {
+        // checks if the key exists / is valid
+        return keys.containsKey(userInput);
+    }
+
+    public void compare(String userInput) {
+        String compGuess = this.getGuess();
+        System.out.println("The computer chose: " + compGuess);
+
+        if (compGuess.equals(userInput)) {
+            System.out.println("It's a draw");
+        }
+        // if computer's guess is equal to the weaker value
+        else if (keys.get(userInput).equals(compGuess)) {
+            System.out.println("You win!");
+            points[0]++;
+        }
+        else {
+            System.out.println("Computer wins!");
+            points[1]++;
+        }
+        System.out.println("Your point is: " + points[0]);
+        System.out.println("Computer's point is: " + points[1] + "\n");
+    }
+
+    private String getGuess() {
+        Random rand = new Random();    
+        // converts keys to an array in order to access an element with a random number
+        Object[] guesses = keys.keySet().toArray();
+        return guesses[rand.nextInt(3)].toString();
+    }
 }
